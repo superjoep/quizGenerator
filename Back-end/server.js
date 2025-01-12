@@ -4,10 +4,10 @@ require("dotenv").config(); // Load .env file
 
 const app = express();
 const PORT = 3000;
-
+const cors = require("cors");
 app.use(express.static("public"));
 app.use(express.json());
-
+app.use(cors());
 app.post("/api/query", async (req, res) => {
   try {
     const response = await axios.post(
@@ -18,9 +18,9 @@ app.post("/api/query", async (req, res) => {
           {
             role: "system",
             content:
-              "you create a quiz and return it in json format based on the data given by the user.",
+              "you create a quiz with ALWAYS 5 questions and return it in json format based on the data given by the user.only give back json and no other texts. json structure is ALWAYS following{ 'title': 'string', 'questions': [ { 'question': 'string', 'options': [ 'string', 'string', 'string' ], 'answer': 'string' } ] }              ",
           },
-          { role: "user", content: req.body.prompt },
+          { role: "user", content: req.body.params.prompt },
         ],
       },
       {
@@ -30,9 +30,11 @@ app.post("/api/query", async (req, res) => {
         },
       }
     );
+    console.log(req);
     const messageContent = response.data.choices[0].message.content;
     res.json({ message: messageContent });
   } catch (error) {
+    console.log("prompt:" + req.body);
     console.error("Error with OpenAI API:", error.message);
     res.status(500).json({
       error: "Failed to fetch response from OpenAI",
